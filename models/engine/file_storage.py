@@ -16,14 +16,20 @@ class FileStorage:
     __objects = {}
 
     def all(self, cls=None):
-        """Returns a dictionary of models currently in storage"""
-        if cls:
-            if isinstance(cls, str):
-                cls = globals().get(cls)
-            if issubclass(cls, BaseModel):
-                cls_dict = {k: v for k, v in self.__object.items() if isinstance(v, cls)}
-                return cls_dict
-        return FileStorage.__objects
+        """Return a dictionary of instantiated objects in __objects.
+
+        If a cls is specified, returns a dictionary of objects of that type.
+        Otherwise, returns the __objects dictionary.
+        """
+        if cls is not None:
+            if type(cls) == str:
+                cls = eval(cls)
+            cls_dict = {}
+            for k, v in self.__objects.items():
+                if type(v) == cls:
+                    cls_dict[k] = v
+            return cls_dict
+        return self.__objects
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
@@ -56,9 +62,9 @@ class FileStorage:
             pass
         
     def delete(self, obj=None):
-        """ Deletes obj from __objects if it's inside """
+        """ Deletes obj from objects if it's inside """
         if obj is not None:
-            key = f"{obj.__class__.__name__}.{obj.id}"
+            key = f"{obj.__class.name}.{obj.id}"
             if key in self.__objects:
                 del self.__objects[key]
         return
