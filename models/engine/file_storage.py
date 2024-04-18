@@ -21,7 +21,7 @@ class FileStorage:
         If a cls is specified, returns a dictionary of objects of that type.
         Otherwise, returns the __objects dictionary.
         """
-        if cls is not None:
+        if cls != None:
             if type(cls) == str:
                 cls = eval(cls)
             cls_dict = {}
@@ -63,7 +63,7 @@ class FileStorage:
         
     def delete(self, obj=None):
         """ Deletes obj from objects if it's inside """
-        if obj is not None:
+        if obj != None:
             key = f"{obj.__class.name}.{obj.id}"
             if key in self.__objects:
                 del self.__objects[key]
