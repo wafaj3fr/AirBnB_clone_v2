@@ -1,30 +1,51 @@
- #!/usr/bin/python3
+#!/usr/bin/python3
 """
-Fabric script based on the file 1-pack_web_static.py that distributes an
-archive to the web servers
+Fabric script based on the file 1-pack_web_static.py
 """
 
-from fabric.api import put, run, env
-from os.path import exists
+from fabric.api import *
+import os
+
 env.hosts = ['54.237.11.197', '35.153.16.149']
-
+env.user = 'ubuntu'
 
 def do_deploy(archive_path):
-    """distributes an archive to the web servers"""
-    if exists(archive_path) is False:
+    """
+    Distributes an archive to web servers and deploys it.
+    Args:
+        archive_path: Path to the archive file.
+    Returns:
+        True if all operations have been done correctly, otherwise False.
+    """
+    if not os.path.exists(archive_path):
+        print("Archive file does not exist.")
         return False
+
     try:
-        file_n = archive_path.split("/")[-1]
-        no_ext = file_n.split(".")[0]
-        path = "/data/web_static/releases/"
-        put(archive_path, '/tmp/')
-        run('mkdir -p {}{}/'.format(path, no_ext))
-        run('tar -xzf /tmp/{} -C {}{}/'.format(file_n, path, no_ext))
-        run('rm /tmp/{}'.format(file_n))
-        run('mv {0}{1}/web_static/* {0}{1}/'.format(path, no_ext))
-        run('rm -rf {}{}/web_static'.format(path, no_ext))
-        run('rm -rf /data/web_static/current')
-        run('ln -s {}{}/ /data/web_static/current'.format(path, no_ext))
+        # Upload the archive to /tmp/ directory of the web server
+        put(archive_path, "/tmp/")
+
+        # Extract archive filename without extension
+        archive_filename = os.path.basename(archive_path)
+        archive_name = os.path.splitext(archive_filename)[0]
+
+        # Uncompress the archive to /data/web_static/releases/ directory on the web server
+        run("mkdir -p /data/web_static/releases/{}/".format(archive_name))
+        run("tar -xzf /tmp/{} -C /data/web_static/releases/{}/"
+            .format(archive_filename, archive_name))
+
+        # Delete the archive from the web server
+        run("rm /tmp/{}".format(archive_filename))
+
+        # Delete the symbolic link /data/web_static/current from the web server
+        run("rm -rf /data/web_static/current")
+
+        # Create a new symbolic link to the new version of code
+        run("ln -s /data/web_static/releases/{}/ /data/web_static/current"
+            .format(archive_name))
+
+        print("New version deployed!")
         return True
-    except:
+    except Exception as e:
+        print("An error occurred:", e)
         return False
