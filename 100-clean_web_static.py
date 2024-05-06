@@ -7,19 +7,24 @@ import os
 env.hosts = ['54.237.11.197', '35.153.16.149']
 
 def do_clean(number=0):
-    """
-    Deletes out-of-date archives.
+    """Delete out-of-date archives.
+
     Args:
-        number: Number of archives to keep.
+        number (int): The number of archives to keep.
+
+    If number is 0 or 1, keeps only the most recent archive. If
+    number is 2, keeps the most and second-most recent archives,
+    etc.
     """
-    try:
-        # Delete unnecessary archives in the versions folder
-        local("ls -t versions | tail -n +{} | xargs -I {{}} rm versions/{{}}".format(number + 1))
+    number = 1 if int(number) == 0 else int(number)
 
-        # Delete unnecessary archives in /data/web_static/releases folder on both servers
-        run("ls -t /data/web_static/releases | tail -n +{} | xargs -I {{}} rm -rf /data/web_static/releases/{{}}"
-            .format(number + 1))
+    archives = sorted(os.listdir("versions"))
+    [archives.pop() for i in range(number)]
+    with lcd("versions"):
+        [local("rm ./{}".format(a)) for a in archives]
 
-        print("Cleaned up old archives successfully.")
-    except Exception as e:
-        print("An error occurred:", e)
+    with cd("/data/web_static/releases"):
+        archives = run("ls -tr").split()
+        archives = [a for a in archives if "web_static_" in a]
+        [archives.pop() for i in range(number)]
+        [run("rm -rf ./{}".format(a)) for a in archives]
