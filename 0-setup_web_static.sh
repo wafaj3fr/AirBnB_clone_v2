@@ -36,3 +36,9 @@ sed -i '/hbnb_static/ {
 
 # Restart nginx
 service nginx restart
+
+if sudo nginx -t && sudo service nginx reload && curl -s localhost/hbnb_static | grep -q "This is a test page for web_static deployment."; then
+    echo "Nginx configuration updated and localhost/hbnb_static available"
+else
+    echo "Nginx configuration update failed or localhost/hbnb_static not available"
+fi
