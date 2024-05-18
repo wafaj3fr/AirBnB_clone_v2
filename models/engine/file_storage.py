@@ -64,7 +64,11 @@ class FileStorage:
     def delete(self, obj=None):
         """ Deletes obj from objects if it's inside """
         if obj != None:
-            key = f"{obj.__class.name}.{obj.id}"
+            key = f"{obj.__class__.__name__}.{obj.id}"
             if key in self.__objects:
                 del self.__objects[key]
         return
+
+    def close(self):
+        """calls reload() to deserialize json file to objects"""
+        self.reload()
