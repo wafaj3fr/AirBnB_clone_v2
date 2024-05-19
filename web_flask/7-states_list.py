@@ -13,7 +13,7 @@ app = Flask(__name__)
 def states():
     """ Returns a template with states listed alphabetically"""
     states = sorted(storage.all("State").values(), key = lambda x: x.name)
-    return render_template("7-states_list.html")
+    return render_template("7-states_list.html", states=states)
 
 @app.teardown_appcontext
 def teardown_db(exception):
