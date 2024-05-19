@@ -12,16 +12,17 @@ class State(BaseModel, Base):
     """ State class """
     __tablename__ = "states"
     name = Column(String(128), nullable=False)
-    cities = relationship("City", cascade="delete", backref="state")
+    cities = relationship("City", cascade="all, delete-orphan", backref="state")
 
     if os.getenv('HBNB_TYPE_STORAGE') != "db":
+        name = ''
+        cities = []
         @property
         def cities(self):
             """ cities getter attribute """
             cities_list = []
             all_cities = models.storage.all(City)
-            for city in all_cities.values():  # change .items() to values() as it
-                # returns an obj that contains values of a dictionary as a list
+            for city in all_cities:
                 if city.state_id == self.id:
                     cities_list.append(city)
             return cities_list
